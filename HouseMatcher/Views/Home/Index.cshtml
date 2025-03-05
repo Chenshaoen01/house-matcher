@@ -1,0 +1,20 @@
+﻿@model HouseMatcher.Models.HouseListViewModel
+@section Header {
+    <title>HouseMathcer</title>
+    <meta name="description" content="地圖尋屋、即時資訊讓您快速找到理想的租屋" />
+    <meta name="keywords" content="HouseMatcher,租屋媒合">
+    <meta name="author" content="陳劭恩">
+    <meta property="og:site_name" content="HouseMathcer" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="HouseMathcer" />
+    <meta property="og:image" content="" />
+    <meta property="og:description" content="地圖尋屋、即時資訊讓您快速找到理想的租屋" />
+}
+<div class="homepage-header d-flex justify-content-center p-5"
+     data-aos="fade-down" data-aos-duration="2000" data-aos-once="true">
+    @Html.Partial("SearchArea")
+</div>
+
+<script>
+    $("body").addClass("home-body")
+</script>

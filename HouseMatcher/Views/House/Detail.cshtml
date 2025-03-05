@@ -1,0 +1,229 @@
+﻿@model HouseMatcher.Models.HouseDetailViewModel
+@{
+    bool isHouseDataExist = Model.HouseList.Count() > 0;
+    bool isHouseOwner = false;
+    bool isLogIn = User.Identity.IsAuthenticated;
+    HouseDataGetDto DetailHouseData = isHouseDataExist? Model.HouseList[0] : new HouseDataGetDto() { };
+
+    string HouseImgUrl = "/" + @DetailHouseData.HouseImg;
+    string HouseAddress = DetailHouseData.City + DetailHouseData.District + DetailHouseData.Road + DetailHouseData.Location;
+}
+@section Header {
+    <title>@DetailHouseData.HouseName HouseMatcher</title>
+    <meta name="description" content="租金：NT$ @DetailHouseData.RentPerMonth /月 地點：@HouseAddress 坪數：@DetailHouseData.HouseSize 坪" />
+    <meta name="keywords" content="HouseMatcher,租屋媒合">
+    <meta name="author" content="陳劭恩">
+    <meta property="og:site_name" content="HouseMathcer房屋詳細資訊-@DetailHouseData.HouseName" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="HouseMathcer房屋詳細資訊-@DetailHouseData.HouseName" />
+    <meta property="og:image" content="@DetailHouseData.HouseImg" />
+    <meta property="og:description" content="租金：NT$ @DetailHouseData.RentPerMonth /月 地點：@HouseAddress 坪數：@DetailHouseData.HouseSize 坪" />
+}
+<div class="d-flex justify-content-center h-100">
+    <div class="main-content my-5">
+        @{
+            if (isHouseDataExist)
+            {
+                string UserId = "";
+        
+                if (isLogIn)
+                {
+                    UserId = @User.FindFirst(type => type.Type == "UserId").Value;
+                    isHouseOwner = UserId == DetailHouseData.UserId.ToString();
+                }
+        
+                    <div class="p-3">
+                        <div class="d-flex flex-column flex-md-row align-items-start justify-content-between mb-2 mb-md-0">
+                            <p class="fs-5 fw-bold">@DetailHouseData.HouseName</p>
+                            @{
+                                if (isHouseOwner)
+                                {
+                                    <div class="d-flex">
+                                        <button id="edit-button" class="custom-button custom-button-red me-2"
+                                                data-bs-toggle="modal" data-bs-target="#delete-hint-modal">
+                                            刪除
+                                        </button>
+                                        <button id="edit-button" class="custom-button"
+                                                data-bs-toggle="modal" data-bs-target="#form-modal">
+                                            編輯
+                                        </button>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        <div class="house-detail-img mb-3" style="background-image: url('@DetailHouseData.HouseImg')"
+                             data-bs-toggle="modal" data-bs-target="#house-img-modal">
+                            <div class="house-detail-img-hover">
+                            <p class="text-white fs-5 fw-bold">點擊可放大檢視圖片</p>
+                            </div>
+                        </div>
+                        <p>租金：NT$ @DetailHouseData.RentPerMonth /月</p>
+                        <p>地點：@HouseAddress</p>
+                        <p>坪數：@DetailHouseData.HouseSize 坪</p>
+                        <div class="d-flex flex-wrap">
+                            @{
+                                foreach (var feature in DetailHouseData.FeaturLabelList)
+                                {
+                                    <span class="feature-label">@feature.LabelName</span>
+                                }
+                            }
+                        </div>
+                        <div class="devider my-3"></div>
+                        <div class="house-description-content">
+                            @Html.Raw(DetailHouseData.Description)
+                        </div>
+                    </div>
+                    if (!isHouseOwner)
+                    {
+                        string modalTarget = isLogIn ? "#detail-page-message-modal" : "#no-log-in-hint";
+                        <div class="d-flex justify-content-center mt-4">
+                            <button id="message-modal-button" class="custom-button" data-bs-toggle="modal" data-bs-target="@modalTarget">
+                                聯絡屋主
+                            </button>
+                        </div>
+                    }
+        
+                    @* 刪除確認視窗 *@
+                    <div class="modal fade" id="delete-hint-modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-blue">
+                                    <h1 class="modal-title fs-5 fw-bold text-dark">系統提示</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center fw-bold fs-5 py-5">
+                                    請確認是否刪除此筆房屋資料
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="custom-button me-2"
+                                            data-bs-dismiss="modal" aria-label="Close">
+                                        取消
+                                    </button>
+                                    <button id="delete-submit-button" type="button" class="custom-button"
+                                            data-bs-dismiss="modal" aria-label="Close">
+                                        確認
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    @* 房屋圖片視窗 *@
+                    <div class="modal fade" id="house-img-modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content p-0">
+                                <div class="modal-body text-center fw-bold fs-5 position-relative p-0">
+                                    <div class="position-absolute end-0 d-flex justify-content-end mb-2">
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                <img src="@DetailHouseData.HouseImg" class="w-100" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    @* 尚未登入提示視窗 *@
+                    <div class="modal fade" id="no-log-in-hint" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-blue">
+                                    <h1 class="modal-title fs-5 fw-bold">系統提示</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center fw-bold fs-5 pt-5">
+                                    <p class="mb-2">您尚未登入，無法發送訊息</p>
+                                    <p>是否前往登入頁面？</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <a href="@Url.Action("LoginPage", "User", new { returnId = DetailHouseData.HouseId })" class="custom-button">
+                                        確認
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    @* 訊息發送視窗 *@
+                    <div class="modal fade" id="detail-page-message-modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header p-3 pb-1 align-items-start">
+                                    <div class="d-flex flex-column">
+                                        <p class="fs-6 fw-bold mb-1 text-dark">屋主：@Model.HouseOwnerName.UserName</p>
+                                        <p class="fs-6 fw-bold mb-1 text-dark text-start">@DetailHouseData.HouseName</p>
+                                    </div>
+                                    <button type="button" class="btn-close mt-2" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body pt-2">
+                                    <div class="d-flex flex-column align-items-end w-100">
+                                        <p class="w-100 fs-6 fw-bold mb-2">訊息內容：</p>
+                                        <textarea id="message-input" type="text" class="w-100 form-control mb-3"></textarea>
+                                        <button type="button" id="message-submit" class="custom-button fw-bold"
+                                                data-house-id="@DetailHouseData.HouseId" data-house-name="@DetailHouseData.HouseName"
+                                                data-sender-id="@UserId" data-sender-name="@User.Identity.Name"
+                                                data-receiver-id="@Model.HouseOwnerName.UserId" data-receiver-name="@Model.HouseOwnerName.UserName">
+                                            送出
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            } else
+            {
+                <p class="text-center mb-0 mt-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-house-x-fill" viewBox="0 0 16 16">
+                        <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293z" />
+                        <path d="m8 3.293 4.712 4.712A4.5 4.5 0 0 0 8.758 15H3.5A1.5 1.5 0 0 1 2 13.5V9.293z" />
+                        <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m-.646-4.854.646.647.646-.646a.5.5 0 0 1 .708.707l-.647.646.647.646a.5.5 0 0 1-.708.708l-.646-.647-.646.647a.5.5 0 0 1-.708-.707l.647-.647-.647-.646a.5.5 0 0 1 .708-.707Z" />
+                    </svg>
+                </p>
+                <h5 class="text-center fw-bold mt-5">該租屋資訊不存在或已被刪除</h5>
+            }
+        }
+    </div>
+    
+</div>
+@{
+    if(isHouseDataExist)
+    {
+        @Html.Partial("Form")
+    }
+}
+
+@{
+    if (!isHouseOwner && isLogIn)
+    {
+        <script src="~/js/signalr/dist/browser/signalr.js"></script>
+        <script src="~/js/chat.js"></script>
+    }
+}
+
+<script>
+    $(document).ready(function() {
+        // 刪除視窗 送出按鈕點擊事件
+        $(document).on('click', '#delete-submit-button', async function () {
+            showLoading()
+            $.ajax({
+                url: '@Url.Action("HouseDelete", "House", new { id = DetailHouseData.HouseId })',
+                method: 'DELETE',
+                contentType: 'application/json',
+                success: function (res) {
+                    saveMessageAndRefresh(res, '@Url.Action("ManageList", "House")')
+                    hideLoading()
+                },
+                error: function (err) {
+                    showHint(err.responseText)
+                    hideLoading()
+                },
+            });
+        })
+
+        // 聯絡屋主 送出按鈕點擊事件
+        $(document).on('click', '#message-submit', function () {
+            messageSubmit()
+        })
+    })
+</script>
+
+
